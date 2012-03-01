@@ -40,17 +40,20 @@ class Hw1
   end
 
   def rps_tournament_winner(tournament)
-
     plays = Hash[*tournament.flatten].map { |player, strategy| [player, strategy] }
-
     while (plays.length > 1)
       next_plays = []
       plays.each_slice(2) { |game| next_plays << self.rps_game_winner(game) }
       plays = next_plays
     end
-    
     plays[0]
-    
+  end
+  
+  def combine_anagrams(words)
+    finder = Proc.new do |match_word, list| 
+      list.select { |word| word if(word.downcase.split(//).sort == match_word.downcase.split(//).sort) }
+    end
+    anagrams = words.map { |word| finder.call(word, words) }.uniq
   end
 
 end
@@ -124,20 +127,24 @@ describe Hw1, "Ruby calisthenics" do
       @hw1.rps_game_winner(game).should equal player1
     end
 
-    it "should support a tournament at the end of which, there is a single winnder" do
+    it "should support a tournament at the end of which, there is a single winner" do
       tournament = [ [
                        [ ["Armando", "P"], ["Dave", "S"] ],
-                       [ ["Richard", "R"], ["Michael", "S"] ],
+                       [ ["Richard", "R"], ["Michael", "S"] ]
                      ],
                      [
                        [ ["Allen", "S"], ["Omer", "P"] ],
                        [ ["David E.", "R"], ["Richard X.", "P"] ]
                      ]
                      ]
-
       @hw1.rps_tournament_winner(tournament).should == ["Richard", "R"]
-
     end
+    
+    it "should find anagram groups in an array of strings" do
+      groups = @hw1.combine_anagrams(['cars', 'for', 'potatoes', 'racs', 'four','scar', 'creams', 'scream'])
+      groups.each { |group| group.should satisfy { |grp| [["cars", "racs", "scar"], ["four"], ["for"], ["potatoes"], ["creams", "scream"]].include?(grp) } }
+    end
+
   end
 
 end
